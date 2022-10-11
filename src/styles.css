@@ -1,0 +1,30 @@
+.App {
+  font-family: sans-serif;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.game-board {
+  /* border: 1px solid black; */
+  display: flex;
+  justify-content: center;
+}
+
+td {
+  border: 1px solid black;
+  width: 25px;
+  height: 25px;
+}
+
+.keyboard {
+  margin-top: 25px;
+  /* display: flex; */
+  /* justify-content: center; */
+  width: 100%;
+}
+
+button {
+  width: 50px;
+  height: 50px;
+}

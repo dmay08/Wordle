@@ -1,5 +1,5 @@
 import "./styles.css";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 // let board = [
 //   ["", "", "", "", ""],
@@ -52,15 +52,20 @@ export default function App() {
 
   // Not dynamic, can hook up to API & useState
   const word = "enjoy".split("");
-  // console.log("word", word);
-
   const [gameBoard, setGameBoard] = useState(board);
+  const [remainingLetters, setRemainingLetters] = useState(alphabet);
+  const [isWinner, setIsWinner] = useState(false);
 
   // Increment these to move through squares
   const [currentSquare, setCurrentSquare] = useState({
     row: 0,
     col: 0
   });
+  const { row, col } = currentSquare;
+
+  useEffect(() => {
+    if (isWinner) alert("Winner!");
+  }, [isWinner]);
 
   function getSquareValueInfo(rowIdx, colIdx) {
     let boardCopy = [...gameBoard];
@@ -69,38 +74,95 @@ export default function App() {
 
   // Click keyboard letter
   function handleKeyboardClick(letter) {
-    const { row, col } = currentSquare;
-    let boardCopy = [...gameBoard];
+    if (!isWinner) {
+      let boardCopy = [...gameBoard];
 
-    // Set the letter to square
-    boardCopy[row][col] = { val: letter };
-    setGameBoard(boardCopy);
+      // Set the letter to square
+      boardCopy[row][col] = { val: letter };
+      setGameBoard(boardCopy);
 
-    // Move to next square
-    const currentSquareCopy = { ...currentSquare };
-    currentSquareCopy.col++;
+      // Move to next square
+      const currentSquareCopy = { ...currentSquare };
+      currentSquareCopy.col++;
+      setCurrentSquare(currentSquareCopy);
 
-    // BROKEN - only works for 1 row
-    if ((col + 1) % 5 === 0) {
-      console.log("MOVE DOWN A ROW");
-      // increase the row by 1
-      currentSquareCopy.row++;
+      // User must now hit 'Del' or 'Enter'
+      if ((col + 1) % 5 === 0) {
+        return;
+      }
     }
-
-    // console.log("currentSquareCopy", currentSquareCopy);
-    setCurrentSquare(currentSquareCopy);
   }
-  console.log("currentSquare", currentSquare);
+
+  // Click 'Delete' button
+  function handleDelete() {
+    const _gameBoard = [...gameBoard];
+    let _currentSquare = { ...currentSquare };
+    const currentVal = _gameBoard[row][col - 1];
+
+    currentVal.val = "";
+    _gameBoard[row][col - 1] = currentVal;
+    _currentSquare.col--;
+
+    setGameBoard(_gameBoard);
+    setCurrentSquare(_currentSquare);
+  }
 
   // Click 'Enter' button
   function handleEnter() {
-    // Logic to TEST what they've input
-    // Update the board w/ the COLOR
+    if (!isWinner) {
+      if (col % 5 === 0) {
+        const guess = gameBoard[row].map(({ val }) => val);
+
+        // Check square letter & apply color
+        let coloredSquares = [];
+        let boardCopy = [...gameBoard];
+        let winnerCounter = 0;
+        gameBoard[row].forEach((square, idx) => {
+          if (word.includes(square.val)) {
+            if (word[idx] === square.val) {
+              square.color = "green";
+
+              // Check for winner
+              winnerCounter++;
+            } else {
+              square.color = "yellow";
+            }
+          } else {
+            square.color = null;
+          }
+          coloredSquares.push(square);
+        });
+        boardCopy[row] = coloredSquares;
+        setGameBoard(boardCopy);
+
+        // Check for winner
+        if (winnerCounter === 5) {
+          setIsWinner(true);
+        }
+
+        // Remove chosen letters from 'remainingLetters'
+        let filteredLetters = [];
+        remainingLetters.forEach((letter) => {
+          if (!guess.includes(letter)) filteredLetters.push(letter);
+        });
+        setRemainingLetters(filteredLetters);
+
+        // - Move to next row
+        const currentSquareCopy = { ...currentSquare };
+        currentSquareCopy.row++;
+        currentSquareCopy.col = 0;
+        setCurrentSquare(currentSquareCopy);
+      }
+    }
+  }
+
+  function getClassName(row, col) {
+    return gameBoard[row][col].color;
   }
 
   const renderSquares = (row, rowIdx) => {
     return row.map((col, colIdx) => (
-      <td key={col} id={col}>
+      <td key={col} id={col} className={getClassName(rowIdx, colIdx)}>
         {getSquareValueInfo(rowIdx, colIdx)}
       </td>
     ));
@@ -114,7 +176,11 @@ export default function App() {
 
   const renderKeyboard = () => {
     return alphabet.map((letter) => (
-      <button key={letter} onClick={() => handleKeyboardClick(letter)}>
+      <button
+        key={letter}
+        className={!remainingLetters.includes(letter) ? "used" : ""}
+        onClick={() => handleKeyboardClick(letter)}
+      >
         {letter}
       </button>
     ));
@@ -129,7 +195,9 @@ export default function App() {
       </div>
       <div className="keyboard">
         {renderKeyboard()}
-        <button style={{ marginLeft: "50px" }}>Del</button>
+        <button style={{ marginLeft: "50px" }} onClick={handleDelete}>
+          Del
+        </button>
         <button onClick={handleEnter}>Enter</button>
       </div>
     </div>

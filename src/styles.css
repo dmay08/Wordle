@@ -17,11 +17,23 @@ td {
   height: 25px;
 }
 
+.green {
+  background: lightgreen;
+}
+
+.yellow {
+  background: yellow;
+}
+
 .keyboard {
   margin-top: 25px;
   /* display: flex; */
   /* justify-content: center; */
   width: 100%;
+}
+
+.used {
+  background: grey;
 }
 
 button {

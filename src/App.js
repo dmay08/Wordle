@@ -63,10 +63,6 @@ export default function App() {
   });
   const { row, col } = currentSquare;
 
-  useEffect(() => {
-    if (isWinner) alert("Winner!");
-  }, [isWinner]);
-
   function getSquareValueInfo(rowIdx, colIdx) {
     let boardCopy = [...gameBoard];
     return boardCopy[rowIdx][colIdx].val;
@@ -121,8 +117,6 @@ export default function App() {
           if (word.includes(square.val)) {
             if (word[idx] === square.val) {
               square.color = "green";
-
-              // Check for winner
               winnerCounter++;
             } else {
               square.color = "yellow";
@@ -188,6 +182,7 @@ export default function App() {
 
   return (
     <div className="App">
+      {isWinner && <div className="modal">Winner!</div>}
       <div className="game-board">
         <table>
           <tbody>{renderGameBoard()}</tbody>
